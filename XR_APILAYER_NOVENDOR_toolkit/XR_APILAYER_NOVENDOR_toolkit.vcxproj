@@ -180,6 +180,7 @@ copy $(SolutionDir)\external\DLSS\lib\Windows_x86_64\rel\nvngx_dlss.dll $(OutDir
   <ItemGroup>
     <ClCompile Include="config.cpp" />
     <ClCompile Include="d3d11.cpp" />
+    <ClCompile Include="depth.cpp" />
     <ClCompile Include="dlss.cpp" />
     <ClCompile Include="framework\dispatch.cpp" />
     <ClCompile Include="framework\dispatch.gen.cpp" />

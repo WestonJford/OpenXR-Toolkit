@@ -50,6 +50,10 @@ namespace {
         // Optionally computed motion vectors.
         std::shared_ptr<graphics::ITexture> motionVectors;
 
+        // Optionally retrieved depth buffer.
+        std::shared_ptr<graphics::ITexture> retrievedDepthBuffer;
+        bool isRetrievedDepthInverted;
+
         std::shared_ptr<graphics::IGpuTimer> upscalerGpuTimer[ViewCount];
         std::shared_ptr<graphics::IGpuTimer> preProcessorGpuTimer[ViewCount];
         std::shared_ptr<graphics::IGpuTimer> postProcessorGpuTimer[ViewCount];
@@ -247,6 +251,7 @@ namespace {
         XrResult xrDestroySession(XrSession session) override {
             const XrResult result = OpenXrApi::xrDestroySession(session);
             if (XR_SUCCEEDED(result) && isVrSession(session)) {
+                m_depthRetriever.reset();
                 m_upscaler.reset();
                 m_preProcessor.reset();
                 m_postProcessor.reset();
@@ -362,6 +367,16 @@ namespace {
                     // We do no processing to depth buffers.
                     if (!(createInfo->usageFlags & XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT)) {
                         continue;
+                    }
+
+                    if (m_depthRetriever) {
+                        m_depthRetriever->registerRenderTarget(
+                            images.chain[0],
+                            [&images](std::shared_ptr<graphics::ITexture> depthBuffer, bool isInverted) {
+                                // TODO: Make a copy.
+                                images.retrievedDepthBuffer = depthBuffer;
+                                images.isRetrievedDepthInverted = isInverted;
+                            });
                     }
 
                     // TODO: Create other entries in the chain based on the processing to do (scaling,
@@ -710,6 +725,12 @@ namespace {
                             entry = entry->next;
                         }
 
+                        // Check the depth retriever.
+                        if (!depthBuffer && m_depthRetriever) {
+                            depthBuffer = swapchainImages.retrievedDepthBuffer;
+                            isDepthInverted = swapchainImages.isRetrievedDepthInverted;
+                        }
+
                         // TODO: Insert processing below.
                         // The pattern typically follows these steps:
                         // - Advanced to the right source and/or destination image;
@@ -870,6 +891,8 @@ namespace {
         std::shared_ptr<graphics::IImageProcessor> m_preProcessor;
         std::shared_ptr<graphics::IImageProcessor> m_postProcessor;
         bool m_enableSuperSampling{false};
+
+        std::shared_ptr<graphics::IDepthRetriever> m_depthRetriever;
 
         std::shared_ptr<menu::IMenuHandler> m_menuHandler;
 

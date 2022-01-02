@@ -380,6 +380,15 @@ namespace toolkit {
                                  int32_t slice = -1) = 0;
         };
 
+        // A shim to retrieve depth buffer for render targets.
+        struct IDepthRetriever {
+            virtual ~IDepthRetriever() = default;
+
+            virtual void registerRenderTarget(
+                std::shared_ptr<ITexture> renderTarget,
+                std::function<void(std::shared_ptr<ITexture> /* depthBuffer */, bool /* isInverted */)> callback) = 0;
+        };
+
     } // namespace graphics
 
     namespace menu {
