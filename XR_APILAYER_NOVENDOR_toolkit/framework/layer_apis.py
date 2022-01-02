@@ -19,6 +19,7 @@ override_functions = [
 # Might repeat entries from override_functions above.
 requested_functions = [
     "xrGetInstanceProperties",
+    "xrGetD3D11GraphicsRequirementsKHR",
     "xrEnumerateViewConfigurationViews",
     "xrEnumerateSwapchainImages"
 ]

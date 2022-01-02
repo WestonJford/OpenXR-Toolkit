@@ -24,6 +24,7 @@
 
 // Standard library.
 #include <array>
+#include <atomic>
 #include <chrono>
 #include <cstdarg>
 #include <ctime>

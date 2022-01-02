@@ -22,6 +22,7 @@
 
 import os
 import sys
+import re
 
 # Import dependencies from the OpenXR SDK.
 cur_dir = os.path.abspath(os.path.dirname(__file__))
@@ -53,6 +54,13 @@ if 'xrGetInstanceProcAddr' in layer_apis.override_functions:
     raise Exception("xrGetInstanceProcAddr() is implicitly overriden and shall not be specified in override_functions. Use the xrGetInstanceProcAddr() virtual method.")
 if 'xrGetInstanceProcAddr' in layer_apis.requested_functions:
     raise Exception("xrGetInstanceProcAddr() cannot be specified in requested_functions. Use the m_xrGetInstanceProcAddr() class member.")
+
+
+def makeREstring(strings, default=None):
+    """Turn a list of strings into a regexp string matching exactly those strings."""
+    if strings or default is None:
+        return '^(' + '|'.join((re.escape(s) for s in strings)) + ')$'
+    return default
 
 
 class DispatchGenOutputGenerator(AutomaticSourceOutputGenerator):
@@ -355,7 +363,8 @@ if __name__ == '__main__':
     registry.loadFile(os.path.join(sdk_dir, 'specification', 'registry', 'xr.xml'))
 
     conventions = OpenXRConventions()
-    featuresPat = "XR_VERSION_1_0"
+    featuresPat = makeREstring(['XR_VERSION_1_0']);
+    emitExtensionsPat = makeREstring('XR_KHR_.*')
 
     registry.setGenerator(DispatchGenCppOutputGenerator(diagFile=None))
     registry.apiGen(AutomaticSourceGeneratorOptions(
@@ -369,7 +378,7 @@ if __name__ == '__main__':
             defaultExtensions = 'openxr',
             addExtensions     = None,
             removeExtensions  = None,
-            emitExtensions    = None))
+            emitExtensions    = emitExtensionsPat))
 
     registry.setGenerator(DispatchGenHOutputGenerator(diagFile=None))
     registry.apiGen(AutomaticSourceGeneratorOptions(
@@ -383,4 +392,4 @@ if __name__ == '__main__':
             defaultExtensions = 'openxr',
             addExtensions     = None,
             removeExtensions  = None,
-            emitExtensions    = None))
+            emitExtensions    = emitExtensionsPat))

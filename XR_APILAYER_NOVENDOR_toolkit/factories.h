@@ -56,6 +56,13 @@ namespace toolkit {
                                                      uint32_t outputWidth,
                                                      uint32_t outputHeight);
 
+        bool InitializeDLSSEngine(LUID adapterLuid);
+        std::shared_ptr<ISuperSampler>
+        CreateDLSSSuperSampler(std::shared_ptr<toolkit::config::IConfigManager> configManager,
+                               std::shared_ptr<IDevice> graphicsDevice,
+                               uint32_t outputWidth,
+                               uint32_t outputHeight);
+
         std::shared_ptr<IImageProcessor>
         CreateImageProcessor(std::shared_ptr<toolkit::config::IConfigManager> configManager,
                              std::shared_ptr<IDevice> graphicsDevice,

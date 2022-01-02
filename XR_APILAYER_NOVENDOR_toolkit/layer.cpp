@@ -107,6 +107,12 @@ namespace {
 
                 m_configManager->setDefault(config::SettingFOV, 100);
 
+                // Check for availability of DLSS.
+                {
+                    // TODO: Invoke xrGetD3D11GraphicsRequirementsKHR() to get the adapter LUID.
+                    graphics::InitializeDLSSEngine(LUID());
+                }
+
                 // Remember the XrSystemId to use.
                 m_vrSystemId = *systemId;
             }
@@ -343,6 +349,13 @@ namespace {
                     throw new std::runtime_error("Unsupported graphics runtime");
                 }
 
+                // Create common resources.
+                if (m_enableSuperSampling) {
+                    swapchainState.superSampler = graphics::CreateDLSSSuperSampler(
+                        m_configManager, m_graphicsDevice, m_displayWidth, m_displayHeight);
+                }
+
+                // Create per-image resources.
                 for (uint32_t i = 0; i < imageCount; i++) {
                     SwapchainImages& images = swapchainState.images[i];
 
@@ -390,6 +403,17 @@ namespace {
                         if (createInfo->arraySize > 1) {
                             images.upscalerGpuTimer[1] = m_graphicsDevice->createTimer();
                         }
+                    }
+
+                    if (m_enableSuperSampling) {
+                        // Create a texture for the motion vectors.
+                        XrSwapchainCreateInfo motionVectorsCreateInfo = chainCreateInfo;
+                        motionVectorsCreateInfo.usageFlags |= XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
+
+                        motionVectorsCreateInfo.format =
+                            m_graphicsDevice->getTextureFormat(graphics::TextureFormat::R16G16_FLOAT);
+                        images.motionVectors = m_graphicsDevice->createTexture(
+                            motionVectorsCreateInfo, fmt::format("Motion vectors swapchain {} TEX2D", i));
                     }
 
                     if (m_postProcessor) {
@@ -733,13 +757,12 @@ namespace {
 
                             // TODO: Handle the case of no depth buffer (skip?).
 
-                            swapchainState.superSampler->upscale(
-                                swapchainImages.chain[lastImage],
-                                swapchainImages.motionVectors,
-                                depthBuffer,
-                                isDepthInverted,
-                                swapchainImages.chain[nextImage],
-                                useVPRT ? eye : -1);
+                            swapchainState.superSampler->upscale(swapchainImages.chain[lastImage],
+                                                                 swapchainImages.motionVectors,
+                                                                 depthBuffer,
+                                                                 isDepthInverted,
+                                                                 swapchainImages.chain[nextImage],
+                                                                 useVPRT ? eye : -1);
                             swapchainImages.upscalerGpuTimer[gpuTimerIndex]->stop();
 
                             lastImage++;
