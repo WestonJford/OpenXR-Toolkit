@@ -47,6 +47,9 @@ namespace {
         std::vector<std::shared_ptr<graphics::ITexture>> chain;
         std::shared_ptr<graphics::ITexture> textureForMenu;
 
+        // Optionally computed motion vectors.
+        std::shared_ptr<graphics::ITexture> motionVectors;
+
         std::shared_ptr<graphics::IGpuTimer> upscalerGpuTimer[ViewCount];
         std::shared_ptr<graphics::IGpuTimer> preProcessorGpuTimer[ViewCount];
         std::shared_ptr<graphics::IGpuTimer> postProcessorGpuTimer[ViewCount];
@@ -55,6 +58,9 @@ namespace {
     struct SwapchainState {
         std::vector<SwapchainImages> images;
         uint32_t acquiredImageIndex{0};
+        uint32_t lastAcquiredImageIndex;
+
+        std::shared_ptr<graphics::ISuperSampler> superSampler;
     };
 
     class OpenXrLayer : public toolkit::OpenXrApi {
@@ -123,7 +129,8 @@ namespace {
                 uint32_t inputHeight = m_displayHeight;
 
                 switch (upscaleMode) {
-                case config::ScalingType::NIS: {
+                case config::ScalingType::NIS:
+                case config::ScalingType::DLSS: {
                     auto resolution = utilities::GetScaledResolution(m_configManager, m_displayWidth, m_displayHeight);
                     inputWidth = resolution.first;
                     inputHeight = resolution.second;
@@ -184,10 +191,16 @@ namespace {
                     // Initialize the other resources.
                     auto upscaleMode = m_configManager->getEnumValue<config::ScalingType>(config::SettingScalingType);
 
+                    m_enableSuperSampling = false;
                     switch (upscaleMode) {
                     case config::ScalingType::NIS:
                         m_upscaler = graphics::CreateNISUpscaler(
                             m_configManager, m_graphicsDevice, m_displayWidth, m_displayHeight);
+                        break;
+
+                    case config::ScalingType::DLSS:
+                        // TODO: For now we only support DLSS with D3D11.
+                        m_enableSuperSampling = m_graphicsDevice->getApi() == graphics::Api::D3D11;
                         break;
 
                     case config::ScalingType::None:
@@ -262,36 +275,41 @@ namespace {
                 return OpenXrApi::xrCreateSwapchain(session, createInfo, swapchain);
             }
 
-            // TODO: Identify the swapchains of interest for our processing chain. For now, we only handle color
-            // buffers.
-            const bool useSwapchain = createInfo->usageFlags & XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
+            // Identify the swapchains of interest for our processing chain.
+            const bool useSwapchain = createInfo->usageFlags & (XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT |
+                                                                XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
             XrSwapchainCreateInfo chainCreateInfo = *createInfo;
             if (useSwapchain) {
                 // TODO: Modify the swapchain to handle our processing chain (eg: change resolution and/or select usage
                 // XR_SWAPCHAIN_USAGE_UNORDERED_ACCESS_BIT).
 
-                if (m_preProcessor) {
-                    // This is redundant (given the useSwapchain conditions) but we do this for correctness.
-                    chainCreateInfo.usageFlags |= XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
-                }
+                if (createInfo->usageFlags & XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT) {
+                    if (m_preProcessor) {
+                        // This is redundant (given the useSwapchain conditions) but we do this for correctness.
+                        chainCreateInfo.usageFlags |= XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
+                    }
 
-                if (m_upscaler) {
-                    // When upscaling, be sure to request the full resolution with the runtime.
-                    chainCreateInfo.width = m_displayWidth;
-                    chainCreateInfo.height = m_displayHeight;
+                    if (m_upscaler || m_enableSuperSampling) {
+                        // When upscaling, be sure to request the full resolution with the runtime.
+                        chainCreateInfo.width = m_displayWidth;
+                        chainCreateInfo.height = m_displayHeight;
 
-                    // The upscaler requires to use as an unordered access view.
-                    chainCreateInfo.usageFlags |= XR_SWAPCHAIN_USAGE_UNORDERED_ACCESS_BIT;
-                }
+                        // The upscaler requires to use as an unordered access view.
+                        chainCreateInfo.usageFlags |= XR_SWAPCHAIN_USAGE_UNORDERED_ACCESS_BIT;
+                    }
 
-                if (m_postProcessor) {
-                    // We no longer need the runtime swapchain to have this flag since we will use an intermediate
-                    // texture.
-                    chainCreateInfo.usageFlags &= ~XR_SWAPCHAIN_USAGE_UNORDERED_ACCESS_BIT;
+                    if (m_postProcessor) {
+                        // We no longer need the runtime swapchain to have this flag since we will use an intermediate
+                        // texture.
+                        chainCreateInfo.usageFlags &= ~XR_SWAPCHAIN_USAGE_UNORDERED_ACCESS_BIT;
 
-                    // This is redundant (given the useSwapchain conditions) but we do this for correctness.
-                    chainCreateInfo.usageFlags |= XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
+                        // This is redundant (given the useSwapchain conditions) but we do this for correctness.
+                        chainCreateInfo.usageFlags |= XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
+                    }
+                } else {
+                    // Make sure the super-sampler can sample te images.
+                    chainCreateInfo.usageFlags |= XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
                 }
             }
 
@@ -328,6 +346,11 @@ namespace {
                 for (uint32_t i = 0; i < imageCount; i++) {
                     SwapchainImages& images = swapchainState.images[i];
 
+                    // We do no processing to depth buffers.
+                    if (!(createInfo->usageFlags & XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT)) {
+                        continue;
+                    }
+
                     // TODO: Create other entries in the chain based on the processing to do (scaling,
                     // post-processing...).
 
@@ -352,7 +375,7 @@ namespace {
                         }
                     }
 
-                    if (m_upscaler) {
+                    if (m_upscaler || m_enableSuperSampling) {
                         // Create an app texture with the lower resolution.
                         XrSwapchainCreateInfo inputCreateInfo = *createInfo;
                         inputCreateInfo.usageFlags |= XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
@@ -373,7 +396,7 @@ namespace {
                         // Create an intermediate texture with the same resolution as the output.
                         XrSwapchainCreateInfo intermediateCreateInfo = chainCreateInfo;
                         intermediateCreateInfo.usageFlags |= XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
-                        if (m_upscaler) {
+                        if (m_upscaler || m_enableSuperSampling) {
                             // The upscaler requires to use as an unordered access view.
                             intermediateCreateInfo.usageFlags |= XR_SWAPCHAIN_USAGE_UNORDERED_ACCESS_BIT;
 
@@ -445,6 +468,7 @@ namespace {
                 // Record the index so we know which texture to use in xrEndFrame().
                 auto swapchainIt = m_swapchains.find(swapchain);
                 if (swapchainIt != m_swapchains.end()) {
+                    swapchainIt->second.lastAcquiredImageIndex = swapchainIt->second.acquiredImageIndex;
                     swapchainIt->second.acquiredImageIndex = *index;
                 }
             }
@@ -635,6 +659,33 @@ namespace {
                         uint32_t lastImage = 0;
                         uint32_t gpuTimerIndex = useVPRT ? eye : 0;
 
+                        // Look for the depth buffer.
+                        std::shared_ptr<graphics::ITexture> depthBuffer;
+                        bool isDepthInverted;
+                        const XrBaseInStructure* entry = reinterpret_cast<const XrBaseInStructure*>(view.next);
+                        while (entry) {
+                            if (entry->type == XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR) {
+                                const XrCompositionLayerDepthInfoKHR* depth =
+                                    reinterpret_cast<const XrCompositionLayerDepthInfoKHR*>(entry);
+                                // The order of color/depth textures must match.
+                                if (depth->subImage.imageArrayIndex == view.subImage.imageArrayIndex) {
+                                    auto depthSwapchainIt = m_swapchains.find(depth->subImage.swapchain);
+                                    if (depthSwapchainIt == m_swapchains.end()) {
+                                        throw new std::runtime_error("Swapchain is not registered");
+                                    }
+                                    auto depthSwapchainState = depthSwapchainIt->second;
+
+                                    assert(depthSwapchainState.images[depthSwapchainState.acquiredImageIndex]
+                                               .chain.size() == 1);
+                                    depthBuffer =
+                                        depthSwapchainState.images[depthSwapchainState.acquiredImageIndex].chain[0];
+                                    isDepthInverted = depth->farZ < depth->nearZ;
+                                }
+                                break;
+                            }
+                            entry = entry->next;
+                        }
+
                         // TODO: Insert processing below.
                         // The pattern typically follows these steps:
                         // - Advanced to the right source and/or destination image;
@@ -659,8 +710,8 @@ namespace {
                             lastImage++;
                         }
 
-                        // Perform upscaling (if requested).
                         if (m_upscaler) {
+                            // Perform upscaling (if requested).
                             nextImage++;
 
                             m_stats.upscalerGpuTimeUs += swapchainImages.upscalerGpuTimer[gpuTimerIndex]->query();
@@ -668,6 +719,27 @@ namespace {
 
                             m_upscaler->upscale(
                                 swapchainImages.chain[lastImage], swapchainImages.chain[nextImage], useVPRT ? eye : -1);
+                            swapchainImages.upscalerGpuTimer[gpuTimerIndex]->stop();
+
+                            lastImage++;
+                        } else if (swapchainState.superSampler) {
+                            // Perform super-sampling (if requested).
+                            nextImage++;
+
+                            m_stats.upscalerGpuTimeUs += swapchainImages.upscalerGpuTimer[gpuTimerIndex]->query();
+                            swapchainImages.upscalerGpuTimer[gpuTimerIndex]->start();
+
+                            // TODO: Compute motion vectors.
+
+                            // TODO: Handle the case of no depth buffer (skip?).
+
+                            swapchainState.superSampler->upscale(
+                                swapchainImages.chain[lastImage],
+                                swapchainImages.motionVectors,
+                                depthBuffer,
+                                isDepthInverted,
+                                swapchainImages.chain[nextImage],
+                                useVPRT ? eye : -1);
                             swapchainImages.upscalerGpuTimer[gpuTimerIndex]->stop();
 
                             lastImage++;
@@ -774,6 +846,7 @@ namespace {
         std::shared_ptr<graphics::IUpscaler> m_upscaler;
         std::shared_ptr<graphics::IImageProcessor> m_preProcessor;
         std::shared_ptr<graphics::IImageProcessor> m_postProcessor;
+        bool m_enableSuperSampling{false};
 
         std::shared_ptr<menu::IMenuHandler> m_menuHandler;
 

@@ -72,7 +72,7 @@ namespace toolkit {
         enum class OverlayType { None = 0, FPS, Advanced, MaxValue };
         enum class MenuFontSize { Small = 0, Medium, Large, MaxValue };
         enum class MenuTimeout { Small = 0, Medium, Large, MaxValue };
-        enum class ScalingType { None = 0, NIS, MaxValue };
+        enum class ScalingType { None = 0, NIS, DLSS, MaxValue };
 
         struct IConfigManager {
             virtual ~IConfigManager() = default;
@@ -353,6 +353,19 @@ namespace toolkit {
 
             virtual void update() = 0;
             virtual void upscale(std::shared_ptr<ITexture> input,
+                                 std::shared_ptr<ITexture> output,
+                                 int32_t slice = -1) = 0;
+        };
+
+        // A texture super-sampler (such as DLSS).
+        struct ISuperSampler {
+            virtual ~ISuperSampler() = default;
+
+            virtual void update() = 0;
+            virtual void upscale(std::shared_ptr<ITexture> input,
+                                 std::shared_ptr<ITexture> motionVectors,
+                                 std::shared_ptr<ITexture> depth,
+                                 bool isDepthInverted,
                                  std::shared_ptr<ITexture> output,
                                  int32_t slice = -1) = 0;
         };
