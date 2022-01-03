@@ -6,7 +6,7 @@ This includes image upscaling using the NVIDIA Image Scaling (NIS) algorithm (av
 
 DISCLAIMER: This software is distributed as-is, without any warranties or conditions of any kind. Use at your own risks.
 
-Please report bugs here: https://github.com/mbucchia/OpenXR-Toolkit/issues.
+Please report bugs here: [https://github.com/mbucchia/OpenXR-Toolkit/issues](https://github.com/mbucchia/OpenXR-Toolkit/issues).
 
 # Setup
 
@@ -44,7 +44,37 @@ You may enable or disable some advanced features from the _OpenXR Toolkit Compan
 
 ## Using the toolkit
 
-Once installed, please run the desired OpenXR application and use the Ctrl+F1 key combination to enter the configuration menu.
+Once installed, please run the desired OpenXR application and use the Ctrl+F2 key combination to enter the configuration menu.
+
+The first few times a new application is started, a reminder message will appear on the screen: it confirms that the software is operating properly.
+
+![On-screen indicator](site/osd-indicator.png)
+
+Use Ctrl+F2 to move to the next option (next line) in the menu. Use Ctrl+F1 (respectively Ctrl+F3) to move selection left (respectively right) or decrease (respectively increase) the value of an option.
+
+When changing the value for an option, hold Shift in addition to the Ctrl key in order to advance faster in the values.
+
+When starting an application for the first time, use the configuration menu to adjust the _Menu eye offset_ until the text appears correctly (eg: no "double vision"):
+
+![On-screen eye offset](site/osd-eye-offset.png)
+
+When enabled from the _OpenXR Toolkit Companion app_, the keys Ctrl+F12 may be used to capture screenshots from the left eye view. Files are stored under `%LocalAppData%`.
+
+### Currently available options
+
+- **Overlay**: Enables the FPS display in the top-right corner of the view. _Please note that the overlay may reduce performance_. A third option - "_Detailed_" - is available in experimental mode and may be used for advanced performance monitoring.
+- **Upscaling**: Enables the use of an upscaler such as NIS to perform rendering at a lower resolution, and upscale and/or sharpen the image.
+- **Factor** (only when _Upscaling_ is enabled): The upscaling factor (ie: the percentage of magnification of the rendering resolution). The resolution display is the effective resolution that the application sees.
+- **Sharpnes** (only when _Upscaling_ is enabled): The sharpness factor.
+- **ICD**: The Inter-Camera Distance override, which can be used to alter the world scale.
+- **FOV**: The Field Of View override.
+- **Font size**: The size of the text for the menu.
+- **Menu timeout**: The duration after which the menu automatically disappears when there is no input.
+- **Menu eye offset**: Adjust rendering of the menu until the text appears clear.
+
+## Recovery
+
+If changing some settings render the application unusable, use Ctrl+F1+F2+F3 to hard reset all settings. If an application can not longer start, use the _OpenXR Toolkit Companion app_ (found on the desktop or Start menu) and select the Safe mode before starting the application.
 
 ## Removing
 
@@ -58,6 +88,6 @@ In the list of applications, select _OpenXR-Toolkit_, then click _Uninstall_.
 
 ## Contributions
 
-The author is Matthieu Bucchianeri (https://github.com/mbucchia/). Please note that this software is not affiliated with Microsoft.
+The author is Matthieu Bucchianeri [https://github.com/mbucchia/](https://github.com/mbucchia/). Please note that this software is not affiliated with Microsoft.
 
-Many thanks to the https://forums.flightsimulator.com/ community for the testing and feedback!
+Many thanks to the [https://forums.flightsimulator.com/](https://forums.flightsimulator.com/) community for the testing and feedback!
