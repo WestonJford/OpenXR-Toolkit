@@ -32,7 +32,7 @@ Follow the instructions to complete the installation procedure.
 
 ![Setup wizard](site/installer.png)
 
-Once installed, you may use the _OpenXR Toolkit Companion app_ (found on the desktop or Start menu) to confirm that the software is active.
+Once installed, you can use the _OpenXR Toolkit Companion app_ (found on the desktop or Start menu) to confirm that the software is active.
 
 ![Companion app shortcut](site/companion-start.png)
 
@@ -40,7 +40,7 @@ The _OpenXR Toolkit Companion app_ will display a green or red status indicating
 
 ![Companion app](site/companion.png)
 
-You may enable or disable some advanced features from the _OpenXR Toolkit Companion app_. However, all the settings for the toolkit are only available from within your OpenXR application (see below).
+The companion app may be used sporadically to enable or disable advanced features or perform recovery (see further below). The actual settings for the toolkit are available from within your OpenXR application (see below). You do not need to open the companion app to use the software and to manage the settings.
 
 ## Using the toolkit
 
@@ -65,7 +65,7 @@ When enabled from the _OpenXR Toolkit Companion app_, the keys Ctrl+F12 may be u
 - **Overlay**: Enables the FPS display in the top-right corner of the view. _Please note that the overlay may reduce performance_. A third option - "_Detailed_" - is available in experimental mode and may be used for advanced performance monitoring.
 - **Upscaling**: Enables the use of an upscaler such as NIS to perform rendering at a lower resolution, and upscale and/or sharpen the image.
 - **Factor** (only when _Upscaling_ is enabled): The upscaling factor (ie: the percentage of magnification of the rendering resolution). The resolution display is the effective resolution that the application sees.
-- **Sharpnes** (only when _Upscaling_ is enabled): The sharpness factor.
+- **Sharpness** (only when _Upscaling_ is enabled): The sharpness factor.
 - **ICD**: The Inter-Camera Distance override, which can be used to alter the world scale.
 - **FOV**: The Field Of View override.
 - **Font size**: The size of the text for the menu.
