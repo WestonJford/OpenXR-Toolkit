@@ -1,12 +1,14 @@
-# Welcome
+---
+layout: default
+title: Quickstart
+nav_order: 1
+---
+
+# OpenXR Toolkit
 
 This software provides a collection of useful features to customize and improve existing OpenXR applications.
 
-This includes image upscaling using the NVIDIA Image Scaling (NIS) algorithm (available with all GPUs, including non-NVIDIA) and other features to adjust and enhance your VR experience.
-
 DISCLAIMER: This software is distributed as-is, without any warranties or conditions of any kind. Use at your own risks.
-
-Please report bugs here: [https://github.com/mbucchia/OpenXR-Toolkit/issues](https://github.com/mbucchia/OpenXR-Toolkit/issues).
 
 # Setup
 
@@ -17,7 +19,6 @@ This software may be used with any brand of VR headset as long as the target app
 ## Limitations
 
 + This software was only extensively tested with Microsoft Flight Simulator 2020;
-+ Only Direct3D 11 is supported;
 + See all [open issues](https://github.com/mbucchia/OpenXR-Toolkit/issues).
 
 ## Installation
@@ -42,7 +43,7 @@ The _OpenXR Toolkit Companion app_ will display a green or red status indicating
 
 The companion app may be used sporadically to enable or disable advanced features or perform recovery (see further below). The actual settings for the toolkit are available from within your OpenXR application (see below). You do not need to open the companion app to use the software and to manage the settings.
 
-## Using the toolkit
+# Using the toolkit
 
 Once installed, please run the desired OpenXR application and use the Ctrl+F2 key combination to enter the configuration menu.
 
@@ -60,7 +61,7 @@ When starting an application for the first time, use the configuration menu to a
 
 When enabled from the _OpenXR Toolkit Companion app_, the keys Ctrl+F12 may be used to capture screenshots from the left eye view. Files are stored under `%LocalAppData%`.
 
-### Currently available options
+## Currently available options
 
 - **Overlay**: Enables the FPS display in the top-right corner of the view. _Please note that the overlay may reduce performance_. A third option - "_Detailed_" - is available in experimental mode and may be used for advanced performance monitoring.
 - **Upscaling**: Enables the use of an upscaler such as NIS to perform rendering at a lower resolution, and upscale and/or sharpen the image.
@@ -72,11 +73,11 @@ When enabled from the _OpenXR Toolkit Companion app_, the keys Ctrl+F12 may be u
 - **Menu timeout**: The duration after which the menu automatically disappears when there is no input.
 - **Menu eye offset**: Adjust rendering of the menu until the text appears clear.
 
-## Recovery
+# Recovery
 
 If changing some settings render the application unusable, use Ctrl+F1+F2+F3 to hard reset all settings. If an application can not longer start, use the _OpenXR Toolkit Companion app_ (found on the desktop or Start menu) and select the Safe mode before starting the application.
 
-## Removing
+# Removal
 
 The software can be removed from Windows' _Add or remove programs_ menu.
 
@@ -85,9 +86,3 @@ The software can be removed from Windows' _Add or remove programs_ menu.
 In the list of applications, select _OpenXR-Toolkit_, then click _Uninstall_.
 
 ![Uninstall](site/uninstall.png)
-
-## Contributions
-
-The author is Matthieu Bucchianeri [https://github.com/mbucchia/](https://github.com/mbucchia/). Please note that this software is not affiliated with Microsoft.
-
-Many thanks to the [https://forums.flightsimulator.com/](https://forums.flightsimulator.com/) community for the testing and feedback!
