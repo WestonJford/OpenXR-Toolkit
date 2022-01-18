@@ -6,7 +6,9 @@ nav_order: 1
 
 # OpenXR Toolkit
 
-This software provides a collection of useful features to customize and improve existing OpenXR applications.
+This software provides a collection of useful features to customize and improve existing OpenXR applications, including render upscaling and sharpening, hand tracking to controller input simulation (on supported devices only) and other game-enhancing tweaks.
+
+For more details on how it works, see the [FAQ](faq).
 
 DISCLAIMER: This software is distributed as-is, without any warranties or conditions of any kind. Use at your own risks.
 
@@ -21,9 +23,13 @@ This software may be used with any brand of VR headset as long as the target app
 + This software was only extensively tested with Microsoft Flight Simulator 2020;
 + See all [open issues](https://github.com/mbucchia/OpenXR-Toolkit/issues).
 
+For future plans, see the [Roadmap](roadmap).
+
 ## Installation
 
-Download the installer package from the [release page](https://github.com/mbucchia/OpenXR-Toolkit/releases).
+[Download the latest](https://github.com/mbucchia/OpenXR-Toolkit/releases){: .btn .btn-blue }
+
+...or expore [all versions](https://github.com/mbucchia/OpenXR-Toolkit/releases).
 
 Run the `OpenXR-Toolkit.msi` program.
 
@@ -63,19 +69,25 @@ When enabled from the _OpenXR Toolkit Companion app_, the keys Ctrl+F12 may be u
 
 ## Currently available options
 
+See [Features](features) for more details.
+
 - **Overlay**: Enables the FPS display in the top-right corner of the view. _Please note that the overlay may reduce performance_. A third option - "_Detailed_" - is available in experimental mode and may be used for advanced performance monitoring.
-- **Upscaling**: Enables the use of an upscaler such as NIS to perform rendering at a lower resolution, and upscale and/or sharpen the image.
-- **Factor** (only when _Upscaling_ is enabled): The upscaling factor (ie: the percentage of magnification of the rendering resolution). The resolution display is the effective resolution that the application sees.
-- **Sharpness** (only when _Upscaling_ is enabled): The sharpness factor.
-- **ICD**: The Inter-Camera Distance override, which can be used to alter the world scale.
-- **FOV**: The Field Of View override.
+- **Upscaling**: Enables the use of an upscaler such as NIS or FSR to perform rendering at a lower resolution, and upscale and/or sharpen the image. Requires to restart the VR session.
+- **Factor** (only when _Upscaling_ is enabled): The upscaling factor (ie: the percentage of magnification of the rendering resolution). The resolution display is the effective resolution that the application sees. Requires to restart the VR session.
+- **Sharpness** (only when _Upscaling_ is enabled): The sharpness factor. Has a different scale/effect between NIS and FSR.
+- **World Scale**: The Inter-Camera Distance override, which can be used to alter the world scale.
+- **Prediction dampening**: The prediction override, which can be use to dampen the prediction for head, controllers, and hand movements.
+- **Hand Tracking** (only when hand tracking is supported by the system): Enable the use of hand tracking in place of the VR controller. Requires a compatible device, such as the Leap Motion. Either or both hands can be enabled at the same time. Requires to restart the VR session when toggling on or off. 
+- **Hand Visibility** (only when _Hand Tracking_ is enabled): Whether the hands are displayed and what color tone to use.
 - **Font size**: The size of the text for the menu.
 - **Menu timeout**: The duration after which the menu automatically disappears when there is no input.
 - **Menu eye offset**: Adjust rendering of the menu until the text appears clear.
 
 # Recovery
 
-If changing some settings render the application unusable, use Ctrl+F1+F2+F3 to hard reset all settings. If an application can not longer start, use the _OpenXR Toolkit Companion app_ (found on the desktop or Start menu) and select the Safe mode before starting the application.
+See [Troubleshooting](troubleshooting) for more details.
+
+If changing some settings render the application unusable, use Ctrl+F1+F2+F3 to hard reset all settings. If an application can not longer start, use the _OpenXR Toolkit Companion app_ (found on the desktop or Start menu) and select the Safe mode before starting the application, then use Ctrl+F1+F2+F3 to hard reset all settings.
 
 # Removal
 
