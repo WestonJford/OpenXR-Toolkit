@@ -1,5 +1,5 @@
 title: OpenXR Toolkit
-remote_theme: daattali/beautiful-jekyll
+remote_theme: pmarsceill/just-the-docs
 show_downloads: False
 github:
   owner_name: Matthieu Bucchianeri
