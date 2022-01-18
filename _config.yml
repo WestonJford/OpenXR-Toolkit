@@ -1,4 +1,5 @@
 title: OpenXR Toolkit
+remote_theme: CloudCannon/edition-jekyll-template
 show_downloads: False
 github:
   owner_name: Matthieu Bucchianeri
