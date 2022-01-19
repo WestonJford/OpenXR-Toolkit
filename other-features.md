@@ -10,3 +10,5 @@ nav_order: 4
 ## World scale
 
 ## Prediction dampening
+
+## Screen capture

@@ -8,7 +8,7 @@ nav_order: 1
 
 This software provides a collection of useful features to customize and improve existing OpenXR applications, including render upscaling and sharpening, hand tracking to controller input simulation (on supported devices only) and other game-enhancing tweaks.
 
-For more details on how it works, see the [FAQ](faq).
+For more details on how it works, see the [FAQ](FAQ).
 
 DISCLAIMER: This software is distributed as-is, without any warranties or conditions of any kind. Use at your own risks.
 
@@ -21,7 +21,7 @@ This software may be used with any brand of VR headset as long as the target app
 ## Limitations
 
 + This software was only extensively tested with Microsoft Flight Simulator 2020;
-+ See all [open issues](https://github.com/mbucchia/OpenXR-Toolkit/issues).
++ See all [open bugs](https://github.com/mbucchia/OpenXR-Toolkit/issues?q=is%3Aopen+is%3Aissue+label%3Abug).
 
 For future plans, see the [Roadmap](roadmap).
 
@@ -67,7 +67,7 @@ When starting an application for the first time, use the configuration menu to a
 
 When enabled from the _OpenXR Toolkit Companion app_, the keys Ctrl+F12 may be used to capture screenshots from the left eye view. Files are stored under `%LocalAppData%`.
 
-## Currently available options
+## Available options
 
 See [Features](features) for more details.
 
